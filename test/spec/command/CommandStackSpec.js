@@ -362,6 +362,31 @@ describe('command/CommandStack', function() {
   });
 
 
+  describe('#getStackIndex', function() {
+
+    it('should work', inject(function(commandStack) {
+
+      // given
+      commandStack.registerHandler('simple-command', SimpleCommand);
+
+      // assume
+      expect(commandStack.getStackIndex()).to.eql(-1);
+
+      // when
+      commandStack.execute('simple-command', { element: { trace: [] } });
+
+      // then
+      expect(commandStack.getStackIndex()).to.eql(0);
+
+      // but when
+      commandStack.undo();
+
+      // then
+      expect(commandStack.getStackIndex()).to.eql(-1);
+    }));
+
+  });
+
   describe('command context', function() {
 
     it('should pass command context to handler', inject(function(commandStack) {
