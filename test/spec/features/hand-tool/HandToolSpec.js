@@ -1,5 +1,6 @@
 import {
   bootstrapDiagram,
+  getDiagramJS,
   inject
 } from 'test/TestHelper';
 
@@ -10,6 +11,10 @@ import draggingModule from 'lib/features/dragging';
 import keyboardModule from 'lib/features/keyboard';
 
 import { createKeyEvent } from 'test/util/KeyEvents';
+
+import {
+  assign
+} from 'min-dash';
 
 
 describe('features/hand-tool', function() {
@@ -43,6 +48,7 @@ describe('features/hand-tool', function() {
     canvas.addShape(childShape, rootShape);
   }));
 
+
   describe('general', function() {
 
     it('should not move element', inject(function(handTool, dragging) {
@@ -63,6 +69,30 @@ describe('features/hand-tool', function() {
       // then
       expect(childShape.x).to.equal(position.x);
       expect(childShape.y).to.equal(position.y);
+    }));
+
+  });
+
+
+  describe('activate on mouse', function() {
+
+    it('should start on PRIMARY mousedown', inject(function(handTool, eventBus) {
+
+      // when
+      eventBus.fire(mouseDownEvent(rootShape, { ctrlKey: true }));
+
+      // then
+      expect(handTool.isActive()).to.be.true;
+    }));
+
+
+    it('should NOT start on AUXILIARY mousedown', inject(function(handTool, eventBus) {
+
+      // when
+      eventBus.fire(mouseDownEvent(rootShape, { button: 1, ctrlKey: false }));
+
+      // then
+      expect(handTool.isActive()).to.be.false;
     }));
 
   });
@@ -137,4 +167,18 @@ function triggerMouseEvent(type, node) {
   event.initMouseEvent(type, true, true, window, 0, 0, 0, 100, 100, false, false, false, false, 0, null);
 
   return node.dispatchEvent(event);
+}
+
+
+// helpers ////////////////
+
+function mouseDownEvent(element, data) {
+
+  return getDiagramJS().invoke(function(eventBus) {
+    return eventBus.createEvent({
+      type: 'element.mousedown',
+      element: element,
+      originalEvent: assign({ button: 0 }, data || {})
+    });
+  });
 }
